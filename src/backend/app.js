@@ -1,3 +1,13 @@
+const knex = require("knex")({
+  client: "mysql2",
+  connection: {
+    host: "127.0.0.1",
+    port: 33060,
+    user: "root",
+    password: "123456",
+    database: "meals",
+  },
+});
 const express = require("express");
 const app = express();
 const router = express.Router();
@@ -20,11 +30,18 @@ app.use(express.json());
 app.use(cors());
 
 router.use("/meals", mealsRouter);
-
+router.get("/test", (req, res) => {
+  res.json("Hello");
+});
+router.get("/info", async (req, res) => {
+  const dbResult = await knex.raw("SELECT VERSION()");
+  const row = dbResult[0][0];
+  res.json({ nodeVersion: process.version, mysqlVersion: row["VERSION()"] });
+});
 if (process.env.API_PATH) {
   app.use(process.env.API_PATH, router);
 } else {
-  throw "API_PATH is not set. Remember to set it in your .env file"
+  throw "API_PATH is not set. Remember to set it in your .env file";
 }
 
 // for the frontend. Will first be covered in the react class

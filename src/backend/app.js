@@ -38,6 +38,19 @@ router.get("/info", async (req, res) => {
   const row = dbResult[0][0];
   res.json({ nodeVersion: process.version, mysqlVersion: row["VERSION()"] });
 });
+
+router.get("/future-meals", async (req, res) => {
+  const currentTime = Date.now();
+  const [rows] = await knex.raw("SELECT * from meal WHERE `when` > CURDATE()");
+  res.json({ rows });
+});
+
+router.get("/past-meals", async (req, res) => {
+  const currentTime = Date.now();
+  const [rows] = await knex.raw("SELECT * from meal WHERE `when` < CURDATE()");
+  res.json({ rows });
+});
+
 if (process.env.API_PATH) {
   app.use(process.env.API_PATH, router);
 } else {

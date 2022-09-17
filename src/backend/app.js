@@ -30,9 +30,8 @@ app.use(express.json());
 app.use(cors());
 
 router.use("/meals", mealsRouter);
-router.get("/test", (req, res) => {
-  res.json("Hello");
-});
+
+//testing knex connection
 router.get("/info", async (req, res) => {
   const dbResult = await knex.raw("SELECT VERSION()");
   const row = dbResult[0][0];
@@ -40,15 +39,36 @@ router.get("/info", async (req, res) => {
 });
 
 router.get("/future-meals", async (req, res) => {
-  const currentTime = Date.now();
   const [rows] = await knex.raw("SELECT * from meal WHERE `when` > CURDATE()");
   res.json({ rows });
 });
 
 router.get("/past-meals", async (req, res) => {
-  const currentTime = Date.now();
   const [rows] = await knex.raw("SELECT * from meal WHERE `when` < CURDATE()");
   res.json({ rows });
+});
+
+router.get("/all-meals", async (req, res) => {
+  const [rows] = await knex.raw("SELECT * from meal ORDER by id Asc");
+  res.json({ rows });
+});
+
+router.get("/first-meal", async (req, res) => {
+  const [rows] = await knex.raw("SELECT * from meal ORDER by id Asc LIMIT 1");
+  if (rows.length === 0) {
+    res.status(404).send("There are no meals...");
+  } else {
+    res.json({ rows });
+  }
+});
+
+router.get("/last-meal", async (req, res) => {
+  const [rows] = await knex.raw("SELECT * from meal ORDER by id Desc LIMIT 1");
+  if (rows.length === 0) {
+    res.status(404).send("There are no meals...");
+  } else {
+    res.json({ rows });
+  }
 });
 
 if (process.env.API_PATH) {

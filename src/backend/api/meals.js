@@ -110,6 +110,31 @@ router.get("/:id", async (request, response) => {
     throw error;
   }
 });
+
+router.get("/:meal_id/reviews", async (request, response) => {
+  try {
+    const idAvailable = await checkIfIdAvailable(request.params.meal_id);
+    const reviewAvailable = await checkIfReviewAvailable(
+      request.params.meal_id
+    );
+
+    if (!idAvailable) {
+      response.status(400).json({ error: "meal not available" });
+      return;
+    } else if (!reviewAvailable) {
+      response
+        .status(400)
+        .json({ error: "reviews for this meal not available" });
+      return;
+    }
+    const review = await knex("review").where({
+      "review.meal_id": request.params.meal_id,
+    });
+    response.json(review);
+  } catch (error) {
+    throw error;
+  }
+});
 // /api/meals/:id	PUT	Updates the meal by id
 router.put("/:id", async (request, response) => {
   try {
@@ -178,6 +203,12 @@ async function checkIfIdAvailable(id) {
   let users = [];
   users = await knex("meal").where({ "meal.id": id }).limit(1);
   return users[0];
+}
+
+async function checkIfReviewAvailable(meal_id) {
+  let reviews = [];
+  reviews = await knex("review").where({ "review.meal_id": meal_id }).limit(1);
+  return reviews[0];
 }
 
 module.exports = router;

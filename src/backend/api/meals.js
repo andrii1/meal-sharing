@@ -7,8 +7,8 @@ const knex = require("../database");
 router.get("/", async (request, response) => {
   try {
     // knex syntax for selecting things. Look up the documentation for knex for further info
-    const titles = await knex("meal").select("title");
-    response.json(titles);
+    const meals = await knex("meal");
+    response.json(meals);
   } catch (error) {
     throw error;
   }
@@ -24,7 +24,6 @@ router.post("/", async (request, response) => {
     when: request.body.when,
     max_reservations: request.body.max_reservations,
     price: request.body.price,
-    created_date: request.body.created_date,
   });
 
   response.status(201).json({ message: "Created a new meal", id: newMeal[0] });
@@ -36,7 +35,7 @@ router.get("/:id", async (request, response) => {
     const idAvailable = await checkIfIdAvailable(request.params.id);
 
     if (!idAvailable) {
-      response.status(400).json({ error: "id not available" });
+      response.status(404).json({ error: "id not available" });
       return;
     }
     const meal = await knex("meal")
@@ -53,7 +52,7 @@ router.put("/:id", async (request, response) => {
     const idAvailable = await checkIfIdAvailable(request.params.id);
 
     if (!idAvailable) {
-      response.status(400).json({ error: "id not available" });
+      response.status(404).json({ error: "id not available" });
       return;
     }
     const updatedMeal = await knex("meal")
@@ -65,7 +64,6 @@ router.put("/:id", async (request, response) => {
         when: request.body.when,
         max_reservations: request.body.max_reservations,
         price: request.body.price,
-        created_date: request.body.created_date,
       });
     response.json({ message: "Meal updated", id: updatedMeal[0] });
   } catch (error) {
@@ -79,7 +77,7 @@ router.delete("/:id", async (request, response) => {
     const idAvailable = await checkIfIdAvailable(request.params.id);
 
     if (!idAvailable) {
-      response.status(400).json({ error: "id not available" });
+      response.status(404).json({ error: "id not available" });
       return;
     }
     const deletedMeal = await knex("meal")

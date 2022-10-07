@@ -39,22 +39,40 @@ router.get("/info", async (req, res) => {
 });
 
 router.get("/future-meals", async (req, res) => {
-  const [rows] = await knex.raw("SELECT * from meal WHERE `when` > CURDATE()");
-  res.json({ rows });
+  const [rows] = await knex.raw(
+    "SELECT title from meal WHERE `when` >= CURDATE()"
+  );
+  if (rows.length === 0) {
+    res.status(404).send("There are no meals...");
+  } else {
+    res.json({ rows });
+  }
 });
 
 router.get("/past-meals", async (req, res) => {
-  const [rows] = await knex.raw("SELECT * from meal WHERE `when` < CURDATE()");
-  res.json({ rows });
+  const [rows] = await knex.raw(
+    "SELECT title from meal WHERE `when` < CURDATE()"
+  );
+  if (rows.length === 0) {
+    res.status(404).send("There are no meals...");
+  } else {
+    res.json({ rows });
+  }
 });
 
 router.get("/all-meals", async (req, res) => {
-  const [rows] = await knex.raw("SELECT * from meal ORDER by id Asc");
-  res.json({ rows });
+  const [rows] = await knex.raw("SELECT title from meal ORDER by id Asc");
+  if (rows.length === 0) {
+    res.status(404).send("There are no meals...");
+  } else {
+    res.json({ rows });
+  }
 });
 
 router.get("/first-meal", async (req, res) => {
-  const [rows] = await knex.raw("SELECT * from meal ORDER by id Asc LIMIT 1");
+  const [rows] = await knex.raw(
+    "SELECT title from meal ORDER by id Asc LIMIT 1"
+  );
   if (rows.length === 0) {
     res.status(404).send("There are no meals...");
   } else {
@@ -63,7 +81,9 @@ router.get("/first-meal", async (req, res) => {
 });
 
 router.get("/last-meal", async (req, res) => {
-  const [rows] = await knex.raw("SELECT * from meal ORDER by id Desc LIMIT 1");
+  const [rows] = await knex.raw(
+    "SELECT title from meal ORDER by id Desc LIMIT 1"
+  );
   if (rows.length === 0) {
     res.status(404).send("There are no meals...");
   } else {

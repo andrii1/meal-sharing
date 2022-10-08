@@ -14,7 +14,7 @@ router.get("/", async (request, response) => {
     query = query.whereRaw("price <= ?", [request.query.maxPrice]);
   }
 
-  if (request.query.availableReservations) {
+  if ((request.query.availableReservations = true)) {
     query = query.join("reservation", "meal.id", "=", "reservation.meal_id");
   }
 
@@ -26,7 +26,7 @@ router.get("/", async (request, response) => {
     "dateAfter" in request.query &&
     typeof request.query.dateAfter === "string"
   ) {
-    query = query.whereRaw("`when` > ?", [request.query.dateAfter]);
+    query = query.where("when", ">", request.query.dateAfter);
   }
 
   if (
@@ -40,38 +40,27 @@ router.get("/", async (request, response) => {
     query = query.limit(`${request.query.limit}`);
   }
 
-  if (request.query.sort_key && request.query.sort_dir) {
+  if (request.query.sort_key) {
     const sortAllowed = ["when", "max_reservations", "price"];
     const orderBy = request.query.sort_key.toString();
     let queryIncludesAllowedSort = sortAllowed.some((element) =>
       orderBy.includes(element)
     );
-    if (queryIncludesAllowedSort) {
-      query = query.orderByRaw(`${orderBy} ${request.query.sort_dir}`);
-    } else {
-      response
-        .status(404)
-        .send("Bad request, only when, max_reservations, price allowed");
-    }
-  }
-
-  if (request.query.sort_key && !request.query.sort_dir) {
-    const sortAllowed = ["when", "max_reservations", "price"];
-    const orderBy = request.query.sort_key.toString();
-    let queryIncludesAllowedSort = sortAllowed.some((element) =>
-      orderBy.includes(element)
-    );
-    if (queryIncludesAllowedSort) {
+    if (queryIncludesAllowedSort && request.query.sort_dir) {
+      query = query.orderBy(orderBy, request.query.sort_dir);
+    } else if (queryIncludesAllowedSort && !request.query.sort_dir) {
       query = query.orderByRaw(orderBy);
     } else {
       response
         .status(404)
         .send("Bad request, only when, max_reservations, price allowed");
+      return;
     }
   }
+
   try {
-    const titles = await query;
-    response.json(titles);
+    const meals = await query;
+    response.json(meals);
   } catch (error) {
     throw error;
   }
@@ -99,7 +88,7 @@ router.get("/:id", async (request, response) => {
     const idAvailable = await checkIfIdAvailable(request.params.id);
 
     if (!idAvailable) {
-      response.status(400).json({ error: "id not available" });
+      response.status(404).json({ error: "id not available" });
       return;
     }
     const meal = await knex("meal")
@@ -114,17 +103,9 @@ router.get("/:id", async (request, response) => {
 router.get("/:meal_id/reviews", async (request, response) => {
   try {
     const idAvailable = await checkIfIdAvailable(request.params.meal_id);
-    const reviewAvailable = await checkIfReviewAvailable(
-      request.params.meal_id
-    );
 
     if (!idAvailable) {
-      response.status(400).json({ error: "meal not available" });
-      return;
-    } else if (!reviewAvailable) {
-      response
-        .status(400)
-        .json({ error: "reviews for this meal not available" });
+      response.status(404).json({ error: "meal not available" });
       return;
     }
     const review = await knex("review").where({
@@ -141,7 +122,7 @@ router.put("/:id", async (request, response) => {
     const idAvailable = await checkIfIdAvailable(request.params.id);
 
     if (!idAvailable) {
-      response.status(400).json({ error: "id not available" });
+      response.status(404).json({ error: "id not available" });
       return;
     }
     const updatedMeal = await knex("meal")
@@ -167,7 +148,7 @@ router.delete("/:id", async (request, response) => {
     const idAvailable = await checkIfIdAvailable(request.params.id);
 
     if (!idAvailable) {
-      response.status(400).json({ error: "id not available" });
+      response.status(404).json({ error: "id not available" });
       return;
     }
     const deletedMeal = await knex("meal")

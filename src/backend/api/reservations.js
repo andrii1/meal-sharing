@@ -7,8 +7,8 @@ const knex = require("../database");
 router.get("/", async (request, response) => {
   try {
     // knex syntax for selecting things. Look up the documentation for knex for further info
-    const titles = await knex("reservation");
-    response.json(titles);
+    const reservations = await knex("reservation");
+    response.json(reservations);
   } catch (error) {
     throw error;
   }
@@ -20,7 +20,6 @@ router.post("/", async (request, response) => {
   const newReservation = await knex("reservation").insert({
     number_of_guests: request.body.number_of_guests,
     meal_id: request.body.meal_id,
-    created_date: request.body.created_date,
     contact_phonenumber: request.body.contact_phonenumber,
     contact_name: request.body.contact_name,
     contact_email: request.body.contact_email,
@@ -38,7 +37,7 @@ router.get("/:id", async (request, response) => {
     const idAvailable = await checkIfIdAvailable(request.params.id);
 
     if (!idAvailable) {
-      response.status(400).json({ error: "id not available" });
+      response.status(404).json({ error: "id not available" });
       return;
     }
     const reservation = await knex("reservation")
@@ -56,7 +55,7 @@ router.put("/:id", async (request, response) => {
     const idAvailable = await checkIfIdAvailable(request.params.id);
 
     if (!idAvailable) {
-      response.status(400).json({ error: "id not available" });
+      response.status(404).json({ error: "id not available" });
       return;
     }
     const updatedReservation = await knex("reservation")
@@ -64,7 +63,6 @@ router.put("/:id", async (request, response) => {
       .update({
         number_of_guests: request.body.number_of_guests,
         meal_id: request.body.meal_id,
-        created_date: request.body.created_date,
         contact_phonenumber: request.body.contact_phonenumber,
         contact_name: request.body.contact_name,
         contact_email: request.body.contact_email,
@@ -84,7 +82,7 @@ router.delete("/:id", async (request, response) => {
     const idAvailable = await checkIfIdAvailable(request.params.id);
 
     if (!idAvailable) {
-      response.status(400).json({ error: "id not available" });
+      response.status(404).json({ error: "id not available" });
       return;
     }
     const deletedReservation = await knex("reservation")

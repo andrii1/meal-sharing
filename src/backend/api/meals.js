@@ -59,7 +59,9 @@ router.get("/", async (request, response) => {
   }
 
   try {
+
     const meals = await query;
+
     response.json(meals);
   } catch (error) {
     throw error;
@@ -76,7 +78,6 @@ router.post("/", async (request, response) => {
     when: request.body.when,
     max_reservations: request.body.max_reservations,
     price: request.body.price,
-    created_date: request.body.created_date,
   });
 
   response.status(201).json({ message: "Created a new meal", id: newMeal[0] });
@@ -134,7 +135,6 @@ router.put("/:id", async (request, response) => {
         when: request.body.when,
         max_reservations: request.body.max_reservations,
         price: request.body.price,
-        created_date: request.body.created_date,
       });
     response.json({ message: "Meal updated", id: updatedMeal[0] });
   } catch (error) {

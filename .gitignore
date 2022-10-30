@@ -4,6 +4,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+#history
+.history/*
+
 # Runtime data
 pids
 *.pid
@@ -33,7 +36,7 @@ jspm_packages/
 .env
 
 # add gitignore for .vscode and .vscode/settings.json
-.vscode 
+.vscode
 .vscode/settings.json
 
 # React build
